@@ -34,7 +34,7 @@ def new(env, name, cpu_ram_total, waiting):
     with cpu_ram_total.get(ram_proceso) as req:  # pide utilizar cierta cantidad de ram al cpu
         yield req  # espera
         start = env.now
-        print('%s necesita cantidad de ram: %s  cantidad de instrucciones: %s camtidad de RAM actual : %.1f' % (
+        print('%s necesita cantidad de ram: %s  cantidad de instrucciones: %s cantidad de RAM actual : %.1f' % (
             name, ram_proceso, instruccion_proceso, cpu_ram_total.level))
     r = running(env, ram_proceso, cpu_ram_total, instruccion_proceso,
                 waiting, LISTA_TIEMPOS)  # crea un proceso llamado runnig

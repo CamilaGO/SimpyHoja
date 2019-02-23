@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="6de4c9f2-829e-48ad-af8a-4bfa2f6c62b6" name="Default Changelist" comment="" />
+    <list default="true" id="6de4c9f2-829e-48ad-af8a-4bfa2f6c62b6" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/SimSO.py" beforeDir="false" afterPath="$PROJECT_DIR$/SimSO.py" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -22,8 +24,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/SimSO.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="438">
-              <caret line="95" lean-forward="true" selection-start-line="95" selection-end-line="95" />
+            <state relative-caret-position="180">
+              <caret line="36" column="81" selection-start-line="36" selection-start-column="81" selection-end-line="36" selection-end-column="81" />
               <folding>
                 <element signature="e#108#121#0" expanded="true" />
               </folding>
@@ -165,8 +167,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/SimSO.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="438">
-          <caret line="95" lean-forward="true" selection-start-line="95" selection-end-line="95" />
+        <state relative-caret-position="180">
+          <caret line="36" column="81" selection-start-line="36" selection-start-column="81" selection-end-line="36" selection-end-column="81" />
           <folding>
             <element signature="e#108#121#0" expanded="true" />
           </folding>
