@@ -1,6 +1,8 @@
-##HDT5 SIMULACION DE SISTEMA OPERATIVO CON SIMPY
-##CAMILA GONZALES CARNE:
-##MARIA INES VASQUEZ CARNE: 18250
+"""     HDT5 ESTRUCTURA DE DATOS - Algoritmos y Estructuras de datos
+Paula Camila Gonzalez Ortega  Carnet: 18398   -     Maria Ines Vasquez Figueroa   Carnet: 18250
+Este programa utiliza simulación y colas de SimPy (DES, Resources y Container) para
+simular la corrida de programas en un sistema operativo que funciona bajo la logistica de
+ ''proceso a un programa que se ejecuta'' """
 import random
 import simpy
 import math
@@ -8,59 +10,61 @@ from math import sqrt
 from FuncionesSimpy import promedio, desvest
 
 RANDOM_SEED = 300
-PROCESOS_A_REALIZAR = 100  # numero total de procesos y se puede editar para la experimentacion
-INTERVALO = 1  # Generate new customers roughly every x seconds
-CANTIDAD_RAM_CPU = 100  # cantidad ram cpu
-CANTIDAD_INSTRUCCIONES_PROCESO = random.randint(1, 10)  # contiene cantidad de instrucciones de un proceso
+PROCESOS_A_REALIZAR = 200 # numero total de procesos que se puede editar para la experimentacion
+INTERVALO = 1  # Genera un nuevo proceso cada segundo
+CANTIDAD_RAM_CPU = 100 # cantidad de ram cpu
+CANTIDAD_INSTRUCCIONES_PROCESO = random.randint(1, 10)  # contiene cantidad de instrucciones de un proceso que será un numero random de 1 a 10
 ESPERAR_HABER_RAM = 300
 LISTA_TIEMPOS =[]
 
 
 def proceso(env, number, interval, counter, cpu_ram_total, waiting):
-    """Source generates customers randomly"""
+    # Genera Proceso random
 
     for i in range(number):
         tiempo = env.now
-        c = new(env, 'Proceso %02d' % i, cpu_ram_total, waiting)  # crea proceso
-        env.process(c)
-        t = random.expovariate(1.0 / interval)  # crear un numero randon distribucion exponencial
-        yield env.timeout(t)  # espera un tiempo
+        p = new(env, 'Proceso %02d' % (i+1), cpu_ram_total, waiting)  # crea proceso
+        env.process(p)
+        t = random.expovariate(1.0 / interval)  # creación de proceso con una distribución exponencial
+        yield env.timeout(t)  # espera una unidad de tiempo
 
 
-# llega a start, donde decide si hay cantidad de ram suficiente para ser ejecutado
+# Se determina la cantidad de ram necesaria para el proceso
 def new(env, name, cpu_ram_total, waiting):
-    ram_proceso = random.randint(1, 10)  # conteiene la ram a utilizar de un proceso
-    instruccion_proceso = random.randint(1, 10)  # instrucciones a ejectuar de nu proceso
-    with cpu_ram_total.get(ram_proceso) as req:  # pide utilizar cierta cantidad de ram al cpu
-        yield req  # espera
+    min = 1  # Minimo de espacio en RAM necesario y de instrucciones por proceso
+    max = 10  # Maximo de espacio en RAM necesario y de instrucciones por proceso
+    p_ram = random.randint(min, max)  # cantidad de ram a utilizar por el proceso
+    instruccion_proceso = random.randint(min, max)  # cantidad de instrucciones que contiene el proceso
+    with cpu_ram_total.get(p_ram) as req:  # pide utilizar cierta cantidad de ram al CPU
+        yield req  # espera la respuesta
         start = env.now
-        print('%s necesita cantidad de ram: %s  cantidad de instrucciones: %s cantidad de RAM actual : %.1f' % (
-            name, ram_proceso, instruccion_proceso, cpu_ram_total.level))
-    r = running(env, ram_proceso, cpu_ram_total, instruccion_proceso,
-                waiting, LISTA_TIEMPOS)  # crea un proceso llamado runnig
-    env.process(r)
+        print('%s    RAM necesaria: %s    Instrucciones del proceso: %s   Cantidad de RAM actual: %.1f' % (
+            name, p_ram, instruccion_proceso, cpu_ram_total.level))
+    r = running(env, p_ram, cpu_ram_total, instruccion_proceso,
+                waiting, LISTA_TIEMPOS)  # se crea un proceso running (ver metodo abajo)
+    env.process(r)  ## Se efectura el proceso previo
 
 
-def running(env, ram_proceso, cpu_ram_total, instruccion_proceso, waiting, LISTA_TIEMPOS):
+def running(env, p_ram, cpu_ram_total, instruccion_proceso, waiting, LISTA_TIEMPOS):
     global tiempofinal
     global tiempo2
     global totalwait
     global suma
     suma = 0
 
-    # se ejecuta mientras hayan instrucciones
+    # se ejecuta mientras hayan instrucciones a ejecutar en el proceso
     while instruccion_proceso > 0:
-        siguiente = random.choice([1, 2])  # paso para escoger el random si se ejecuta el proceso o no
-        arrive = env.now  # toma el tiempo
+        siguiente = random.choice([1, 2])  # random para determinar si el proceso se ejecuta o se pone en espera
+        arrive = env.now  # lleva en control del tiempo
         with cpu.request() as reqcpu:  # entra a cpu a ejecutar procesos
             yield reqcpu
             yield env.timeout(1)
-            if instruccion_proceso > 3:  # si hay mas de 3 instrucciones que le reste 3
+            if instruccion_proceso > 3:  # si el proceso tiene mas de 3 instrucciones, se ejecutan 3
                 instruccion_proceso = instruccion_proceso - 3
 
                 yield env.timeout(1)
 
-                if siguiente == 2:  # si despues de ejecutar sale esperar , le toca esperar al proceso hasta que salga siguiente
+                if siguiente == 2:  # si despues de ejecutar sale esperar , el proceso se ejecuta hasta que salga siguiente
                     with waiting.request() as reqwait:
                         yield reqwait
                         yield env.timeout(10)
@@ -69,12 +73,12 @@ def running(env, ram_proceso, cpu_ram_total, instruccion_proceso, waiting, LISTA
             else:
                 instruccion_proceso = 0
 
-    # si no hay ram, liberar mas ram , cantidad de procesos utilizados
-    with cpu_ram_total.put(ram_proceso) as reqmem:
+    # si no hay ram disponible, se libera con el numero de procesos utilizados
+    with cpu_ram_total.put(p_ram) as reqmem:
         yield reqmem
     wait = env.now - arrive
-    LISTA_TIEMPOS.append(wait)
-    totalwait = totalwait + wait  # calcular tiempo total
+    LISTA_TIEMPOS.append(wait) ##Se agrega el tiempo utilizado a la lista para obtener el promedio
+    totalwait = totalwait + wait  # sumatoria del tiempo utilizado
 
 
 print("Inicia simulacion de Sistema Operativo")
@@ -83,13 +87,17 @@ env = simpy.Environment()
 cpu_ram_total = simpy.Container(env, init=100, capacity=100)
 waiting = simpy.Resource(env, capacity=1)
 
-# Start processes and run
-counter = simpy.Resource(env, capacity=1)  # recurso Resource de solo 1 CPU
-cpu = simpy.Resource(env, capacity=3)  # CPU con capacidad de ejecutar la cantidad de intrucciones predeterminada por capacoty
+# Se empieza la simulacion
+counter = simpy.Resource(env, capacity=1)  # Resource de solo 1 CPU
+cpu = simpy.Resource(env, capacity=3)  # CPU con capacidad de ejecutar la cantidad de intrucciones predeterminada por capacity
 totalwait = 0
 env.process(proceso(env, PROCESOS_A_REALIZAR, INTERVALO, counter, cpu_ram_total, waiting))
 env.run()
-print("Tiempo total de: " + str(totalwait))
-print("Promedio de tiempo por proceso : " + str(promedio(LISTA_TIEMPOS)))
-print("Desviacion estandar: "+str(desvest(LISTA_TIEMPOS)))
+print("\n---------------------------------------------------------------")
+print("\n\t                   INFORME FINAL\n")
+print("Tiempo total de simulación: " + str(totalwait) + " segundos")
+## Se utilizan metodos de FuncionesSimpy.py para obtener datos estadisticos
+print("Promedio de tiempo por proceso: " + str(promedio(LISTA_TIEMPOS)) + " segundos")
+print("Desviacion estandar: "+str(desvest(LISTA_TIEMPOS)) + " segundos")
+print("---------------------------------------------------------------")
 
