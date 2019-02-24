@@ -22,7 +22,6 @@ def proceso(env, number, interval, counter, cpu_ram_total, waiting):
     # Genera Proceso random
 
     for i in range(number):
-        tiempo = env.now
         p = new(env, 'Proceso %02d' % (i+1), cpu_ram_total, waiting)  # crea proceso
         env.process(p)
         t = random.expovariate(1.0 / interval)  # creación de proceso con una distribución exponencial
