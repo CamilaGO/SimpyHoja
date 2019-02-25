@@ -14,22 +14,21 @@ PROCESOS_A_REALIZAR = 200 # numero total de procesos que se puede editar para la
 INTERVALO = 1  # Genera un nuevo proceso cada segundo
 CANTIDAD_RAM_CPU = 100 # cantidad de ram cpu
 CANTIDAD_INSTRUCCIONES_PROCESO = random.randint(1, 10)  # contiene cantidad de instrucciones de un proceso que será un numero random de 1 a 10
-ESPERAR_HABER_RAM = 300
 LISTA_TIEMPOS =[]
 
 
-def proceso(env, number, interval, counter, cpu_ram_total, waiting):
+def proceso(env, number, interval, cpu_ram_total, CPU):
     # Genera Proceso random
 
     for i in range(number):
-        p = new(env, 'Proceso %02d' % (i+1), cpu_ram_total, waiting)  # crea proceso
+        p = new(env, 'Proceso %02d' % (i+1), cpu_ram_total, CPU)  # crea proceso
         env.process(p)
         t = random.expovariate(1.0 / interval)  # creación de proceso con una distribución exponencial
         yield env.timeout(t)  # espera una unidad de tiempo
 
 
 # Se determina la cantidad de ram necesaria para el proceso
-def new(env, name, cpu_ram_total, waiting):
+def new(env, name, cpu_ram_total, CPU):
     min = 1  # Minimo de espacio en RAM necesario y de instrucciones por proceso
     max = 10  # Maximo de espacio en RAM necesario y de instrucciones por proceso
     p_ram = random.randint(min, max)  # cantidad de ram a utilizar por el proceso
@@ -40,11 +39,10 @@ def new(env, name, cpu_ram_total, waiting):
         print('%s    RAM necesaria: %s    Instrucciones del proceso: %s   Cantidad de RAM actual: %.1f' % (
             name, p_ram, instruccion_proceso, cpu_ram_total.level))
     r = running(env, p_ram, cpu_ram_total, instruccion_proceso,
-                waiting, LISTA_TIEMPOS)  # se crea un proceso running (ver metodo abajo)
+                CPU, LISTA_TIEMPOS)  # se crea un proceso running (ver metodo abajo)
     env.process(r)  ## Se efectura el proceso previo
 
-
-def running(env, p_ram, cpu_ram_total, instruccion_proceso, waiting, LISTA_TIEMPOS):
+def running(env, p_ram, cpu_ram_total, instruccion_proceso, CPU, LISTA_TIEMPOS):
     global tiempofinal
     global tiempo2
     global totalwait
@@ -53,7 +51,7 @@ def running(env, p_ram, cpu_ram_total, instruccion_proceso, waiting, LISTA_TIEMP
 
     # se ejecuta mientras hayan instrucciones a ejecutar en el proceso
     while instruccion_proceso > 0:
-        siguiente = random.choice([1, 2])  # random para determinar si el proceso se ejecuta o se pone en espera
+        decision = random.choice([1, 2])  # random para determinar si el proceso se ejecuta o se pone en espera
         arrive = env.now  # lleva en control del tiempo
         with cpu.request() as reqcpu:  # entra a cpu a ejecutar procesos
             yield reqcpu
@@ -63,12 +61,10 @@ def running(env, p_ram, cpu_ram_total, instruccion_proceso, waiting, LISTA_TIEMP
 
                 yield env.timeout(1)
 
-                if siguiente == 2:  # si despues de ejecutar sale esperar , el proceso se ejecuta hasta que salga siguiente
-                    with waiting.request() as reqwait:
+                if decision == 2:  # si despues de ejecutar sale esperar , el proceso se ejecuta hasta que salga siguiente
+                    with CPU.request() as reqwait:
                         yield reqwait
                         yield env.timeout(10)
-
-
             else:
                 instruccion_proceso = 0
 
@@ -76,7 +72,7 @@ def running(env, p_ram, cpu_ram_total, instruccion_proceso, waiting, LISTA_TIEMP
     with cpu_ram_total.put(p_ram) as reqmem:
         yield reqmem
     wait = env.now - arrive
-    LISTA_TIEMPOS.append(wait) ##Se agrega el tiempo utilizado a la lista para obtener el promedio
+    LISTA_TIEMPOS.append(wait) #Se agrega el tiempo utilizado a la lista para obtener el promedio
     totalwait = totalwait + wait  # sumatoria del tiempo utilizado
 
 
@@ -84,13 +80,12 @@ print("Inicia simulacion de Sistema Operativo")
 random.seed(RANDOM_SEED)
 env = simpy.Environment()
 cpu_ram_total = simpy.Container(env, init=100, capacity=100)
-waiting = simpy.Resource(env, capacity=1)
+CPU = simpy.Resource(env, capacity=1)# Resource de solo 1 CPU o la cantidad que desee
 
 # Se empieza la simulacion
-counter = simpy.Resource(env, capacity=1)  # Resource de solo 1 CPU
 cpu = simpy.Resource(env, capacity=3)  # CPU con capacidad de ejecutar la cantidad de intrucciones predeterminada por capacity
 totalwait = 0
-env.process(proceso(env, PROCESOS_A_REALIZAR, INTERVALO, counter, cpu_ram_total, waiting))
+env.process(proceso(env, PROCESOS_A_REALIZAR, INTERVALO, cpu_ram_total, CPU))
 env.run()
 print("\n---------------------------------------------------------------")
 print("\n\t                   INFORME FINAL\n")
