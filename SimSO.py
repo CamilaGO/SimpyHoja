@@ -10,8 +10,8 @@ from math import sqrt
 from FuncionesSimpy import promedio, desvest
 
 RANDOM_SEED = 300
-PROCESOS_A_REALIZAR = 200 # numero total de procesos que se puede editar para la experimentacion
-INTERVALO = 1  # Genera un nuevo proceso cada segundo
+PROCESOS_A_REALIZAR = 150# numero total de procesos que se puede editar para la experimentacion
+INTERVALO = 5  # Genera un nuevo proceso cada segundo
 CANTIDAD_RAM_CPU = 100 # cantidad de ram cpu
 CANTIDAD_INSTRUCCIONES_PROCESO = random.randint(1, 10)  # contiene cantidad de instrucciones de un proceso que será un numero random de 1 a 10
 LISTA_TIEMPOS =[]
@@ -23,7 +23,7 @@ def proceso(env, number, interval, cpu_ram_total, CPU):
     for i in range(number):
         p = new(env, 'Proceso %02d' % (i+1), cpu_ram_total, CPU)  # crea proceso
         env.process(p)
-        t = random.expovariate(1.0 / interval)  # creación de proceso con una distribución exponencial
+        t = random.expovariate(0.5/ interval)  # creación de proceso con una distribución exponencial
         yield env.timeout(t)  # espera una unidad de tiempo
 
 
@@ -83,7 +83,7 @@ cpu_ram_total = simpy.Container(env, init=100, capacity=100)
 CPU = simpy.Resource(env, capacity=1)# Resource de solo 1 CPU o la cantidad que desee
 
 # Se empieza la simulacion
-cpu = simpy.Resource(env, capacity=3)  # CPU con capacidad de ejecutar la cantidad de intrucciones predeterminada por capacity
+cpu = simpy.Resource(env, capacity=2)  # CPU con capacidad de ejecutar la cantidad de intrucciones predeterminada por capacity
 totalwait = 0
 env.process(proceso(env, PROCESOS_A_REALIZAR, INTERVALO, cpu_ram_total, CPU))
 env.run()
